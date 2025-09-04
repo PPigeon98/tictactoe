@@ -1,12 +1,10 @@
-#include <iostream>
 #include <ncurses.h>
 #include <locale.h>
 
 // TODO:
-// use unicode characters
 // have bigger boards
 // make cursor thick
-// win/lose
+// optimise ugly code
 
 char board[3][3];
 const char p1 = 'X';
@@ -22,16 +20,16 @@ int sizey = 2;
 int currX = 1;
 int currY = 1;
 
-// From lsb:
 // r1
 // r2
 // r3
 // c1
 // c2
 // c3
-// d
-uint8_t p1mask = 0;
-uint8_t p2mask = 0;
+// dn
+// dp
+int p1mask[8] = {0};
+int p2mask[8] = {0};
 
 void init() {
   for (int i = 0; i < 3; i++) {
@@ -48,13 +46,13 @@ void draw() {
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 3; j++) {
       if (j != 2) {
-        printw(" %c |", board[i][j]);
+        printw(" %c │", board[i][j]);
       } else {
         printw(" %c", board[i][j]);
       }
     }
     if (i != 2) {
-      printw("\n---+---+---\n");
+      printw("\n───┼───┼───\n");
     } else {
       printw("\n");
     }
@@ -100,26 +98,77 @@ void select() {
         break;
     }
   }
-  turn ? board[currY][currX] = p2 : board[currY][currX] = p1;
+  if (turn) {
+    board[currY][currX] = p2;
+    p2mask[currY + 3]++;
+    p2mask[currX]++;
+    if (currX == currY) {
+      p2mask[6]++;
+    }
+    if (currX + currY == 2) {
+      p2mask[7]++;
+    }
+  } else {
+    board[currY][currX] = p1;
+    p1mask[currY + 3]++;
+    p1mask[currX]++;
+    if (currX == currY) {
+      p1mask[6]++;
+    }
+    if (currX + currY == 2) {
+      p1mask[7]++;
+    }
+  }
 }
 
-void check() {
+int win() {
+  for (int i = 0; i < 8; i++) {
+    if (p1mask[i] == 3) {
+      return 1;
+    }
+    if (p2mask[i] == 3) {
+      return 2;
+    }
+  }
 
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+      if (board[i][j] == ' ') {
+        return 0;
+      }
+    }
+  }
+
+  return 3;
 }
 
 void gameloop() {
   while (true) {
     draw();
 	  refresh();
+    int result = win();
+    if (result > 0) {
+      move(10, 0);
+      if (result == 1) {
+        printw("Game Over! Player 1 wins! Press any key to exit.");
+      } else if (result == 2) {
+        printw("Game Over! Player 2 wins! Press any key to exit.");
+      } else {
+        printw("Game Over! It's a draw! Press any key to exit.");
+      }
+      refresh();
+      getch();
+      break;
+    }
     select();
     turn = !turn;
   }
 }
 
 int main() {
+  setlocale(LC_ALL, ""); // Generate locales if not working
   initscr();
   noecho();
-  curs_set(2);
 
   init();
   gameloop();

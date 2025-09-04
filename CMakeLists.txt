@@ -8,6 +8,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -O3 -Wformat -Wformat=2 -Wconversion -Werror)
 endif()
 
+set(CURSES_NEED_WIDE TRUE)
 find_package(Curses REQUIRED)
 
 add_executable(tictactoe src/main.cc)
