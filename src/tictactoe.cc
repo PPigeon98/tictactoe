@@ -20,14 +20,7 @@ int sizey = 2;
 int currX = 1;
 int currY = 1;
 
-// r1
-// r2
-// r3
-// c1
-// c2
-// c3
-// dn
-// dp
+// row1, row2, row3, col1, col2, col3, diagnegative, diagpositive
 int p1mask[8] = {0};
 int p2mask[8] = {0};
 
@@ -58,6 +51,30 @@ void draw() {
     }
   }
   move(y, x);
+}
+
+void update() {
+  if (turn) {
+    board[currY][currX] = p2;
+    p2mask[currY + 3]++;
+    p2mask[currX]++;
+    if (currX == currY) {
+      p2mask[6]++;
+    }
+    if (currX + currY == 2) {
+      p2mask[7]++;
+    }
+  } else {
+    board[currY][currX] = p1;
+    p1mask[currY + 3]++;
+    p1mask[currX]++;
+    if (currX == currY) {
+      p1mask[6]++;
+    }
+    if (currX + currY == 2) {
+      p1mask[7]++;
+    }
+  }
 }
 
 void select() {
@@ -95,28 +112,8 @@ void select() {
         break;
       case '\n':  // return
         if (board[currY][currX] == ' ') ch = -2;
+        update();
         break;
-    }
-  }
-  if (turn) {
-    board[currY][currX] = p2;
-    p2mask[currY + 3]++;
-    p2mask[currX]++;
-    if (currX == currY) {
-      p2mask[6]++;
-    }
-    if (currX + currY == 2) {
-      p2mask[7]++;
-    }
-  } else {
-    board[currY][currX] = p1;
-    p1mask[currY + 3]++;
-    p1mask[currX]++;
-    if (currX == currY) {
-      p1mask[6]++;
-    }
-    if (currX + currY == 2) {
-      p1mask[7]++;
     }
   }
 }

@@ -11,5 +11,15 @@ endif()
 set(CURSES_NEED_WIDE TRUE)
 find_package(Curses REQUIRED)
 
-add_executable(tictactoe src/main.cc)
+
+add_executable(tictactoe src/tictactoe.cc)
 target_link_libraries(tictactoe ${CURSES_LIBRARIES})
+
+add_executable(connect4 src/connect4.cc)
+target_link_libraries(connect4 ${CURSES_LIBRARIES})
+
+add_executable(snake src/snake.cc)
+target_link_libraries(snake ${CURSES_LIBRARIES})
+
+add_executable(tetris src/tetris.cc)
+target_link_libraries(tetris ${CURSES_LIBRARIES})
