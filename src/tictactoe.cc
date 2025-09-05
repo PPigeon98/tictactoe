@@ -7,22 +7,17 @@
 // optimise ugly code
 
 char board[3][3];
-const char p1 = 'X';
-const char p2 = 'O';
+const char P1_ = 'X';
+const char P2_ = 'O';
 bool turn = 0; // 0 = p1, 1 = p2
-int x = 5;
-int y = 3;
-int start = 2;
-int end = 6;
-int endY = 5;
-int size = 4;
-int sizey = 2;
-int currX = 1;
-int currY = 1;
+int x = 1;
+int y = 1;
+int width = 3;
+int height = 1;
 
 // row1, row2, row3, col1, col2, col3, diagnegative, diagpositive
-int p1mask[8] = {0};
-int p2mask[8] = {0};
+int p1[8];
+int p2[8];
 
 void init() {
   for (int i = 0; i < 3; i++) {
@@ -30,7 +25,8 @@ void init() {
       board[i][j] = ' ';
     }
   }
-  move(y, x);
+  move(y * (height + 1) + height / 2 + 1, 
+       x * (width + 1) + width / 2);
 }
 
 void draw() {
@@ -45,34 +41,44 @@ void draw() {
       }
     }
     if (i != 2) {
-      printw("\n───┼───┼───\n");
+      printw("\n");
+      for (int j = 0; j < 3; j++) {
+        for (int k = 0; k < width; k++) {
+          printw("─");
+        }
+        if (j != 2) {
+          printw("┼");
+        }
+      }
+      printw("\n");
     } else {
       printw("\n");
     }
   }
-  move(y, x);
+  move(y * (height + 1) + height / 2 + 1, 
+       x * (width + 1) + width / 2);
 }
 
 void update() {
   if (turn) {
-    board[currY][currX] = p2;
-    p2mask[currY + 3]++;
-    p2mask[currX]++;
-    if (currX == currY) {
-      p2mask[6]++;
+    board[y][x] = P2_;
+    p2[y + 3]++;
+    p2[x]++;
+    if (x == y) {
+      p2[6]++;
     }
-    if (currX + currY == 2) {
-      p2mask[7]++;
+    if (x + y == 2) {
+      p2[7]++;
     }
   } else {
-    board[currY][currX] = p1;
-    p1mask[currY + 3]++;
-    p1mask[currX]++;
-    if (currX == currY) {
-      p1mask[6]++;
+    board[y][x] = P1_;
+    p1[y + 3]++;
+    p1[x]++;
+    if (x == y) {
+      p1[6]++;
     }
-    if (currX + currY == 2) {
-      p1mask[7]++;
+    if (x + y == 2) {
+      p1[7]++;
     }
   }
 }
@@ -83,36 +89,46 @@ void select() {
 	  ch = getch();
     switch(ch) {
       case 65:    // key up
-        if (y > start) {
-          y -= sizey;
-          currY--;
+        if (y > 0) {
+          y--;
         }
-        move(y, x);
+        move(y * (height + 1) + height / 2 + 1, 
+            x * (width + 1) + width / 2);
         break;
       case 66:    // key down
-        if (y < endY) {
-          y += sizey;
-          currY++;
+        if (y < 2) {
+          y++;
         }
-        move(y, x);
+        move(y * (height + 1) + height / 2 + 1, 
+            x * (width + 1) + width / 2);
         break;
       case 67:    // key right
-        if (x < end) {
-          x += size;
-          currX++;
+        if (x < 2) {
+          x++;
         }
-        move(y, x);
+        move(y * (height + 1) + height / 2 + 1, 
+            x * (width + 1) + width / 2);
         break;
       case 68:    // key left
-        if (x > start) {
-          x -= size;
-          currX--;
+        if (x > 0) {
+          x--;
         }
-        move(y, x);
+        move(y * (height + 1) + height / 2 + 1, 
+            x * (width + 1) + width / 2);
         break;
       case '\n':  // return
-        if (board[currY][currX] == ' ') ch = -2;
+        if (board[y][x] == ' ') ch = -2;
         update();
+        break;
+      case '1':
+        width = 3;
+        height = 1;
+        draw();
+        break;
+      case '2':
+        width = 5;
+        height = 2;
+        draw();
         break;
     }
   }
@@ -120,10 +136,10 @@ void select() {
 
 int win() {
   for (int i = 0; i < 8; i++) {
-    if (p1mask[i] == 3) {
+    if (p1[i] == 3) {
       return 1;
     }
-    if (p2mask[i] == 3) {
+    if (p2[i] == 3) {
       return 2;
     }
   }
@@ -143,6 +159,7 @@ void gameloop() {
   while (true) {
     draw();
 	  refresh();
+
     int result = win();
     if (result > 0) {
       move(10, 0);
@@ -157,6 +174,7 @@ void gameloop() {
       getch();
       break;
     }
+
     select();
     turn = !turn;
   }

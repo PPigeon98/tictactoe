@@ -15,7 +15,7 @@ void draw() {
   for (int i = 0; i < gameheight; i++) {
     for (int j = 0; j < gamewidth; j++) {
       if (i == gamewidth - 1) {
-        printw("");
+        printw(" ");
       }
     }
   }
