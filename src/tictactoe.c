@@ -181,6 +181,11 @@ void selection() {
         clear();
         draw();
         break;
+      case '?':  // help
+        move(0, 0);
+        printw("Controls: Arrow keys to move, Enter to place, +/- to resize, = to toggle mode, ? for help, q to quit\n");
+        move(y * (height + 1) + height / 2 + 1, x * (width + 1) + width / 2);
+        break;
       case 'q':  // exit
         endwin();
         exit(0);
