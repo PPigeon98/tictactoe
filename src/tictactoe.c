@@ -1,5 +1,6 @@
 #include <ncurses.h>
 #include <locale.h>
+#include <stdlib.h>
 
 char board[3][3];
 const char P1_ = 'X';
@@ -9,6 +10,7 @@ int x = 1;
 int y = 1;
 int width = 3;
 int height = 1;
+bool big = true;
 
 void init() {
   for (int i = 0; i < 3; i++) {
@@ -23,39 +25,96 @@ void draw() {
   move(0, 0);
   turn ? printw("Player 2's turn:\n") : printw("Player 1's turn:\n");
   for (int i = 0; i < 3; i++) {
-    for (int j = 0; j < height / 2; j++) {
-      for (int l = 0; l < 3; l++) {
-        for (int k = 0; k < width; k++) {
+    if (!big || height <= 1) {
+      for (int j = 0; j < height / 2; j++) {
+        for (int l = 0; l < 3; l++) {
+          for (int k = 0; k < width; k++) {
+            printw(" ");
+          }
+          if (l != 2) {
+            printw("│");
+          }
+        }
+        printw("\n");
+      }
+
+      for (int j = 0; j < 3; j++) {
+        for (int k = 0; k < (width - 1) / 2; k++) {
           printw(" ");
         }
-        if (l != 2) {
+        printw("%c", board[i][j]);
+        for (int k = 0; k < width / 2; k++) {
+          printw(" ");
+        }
+        if (j != 2) {
           printw("│");
         }
       }
-      printw("\n");
-    }
 
-    for (int j = 0; j < 3; j++) {
-      for (int k = 0; k < (width - 1) / 2; k++) {
-        printw(" ");
-      }
-      printw("%c", board[i][j]);
-      for (int k = 0; k < width / 2; k++) {
-        printw(" ");
-      }
-      if (j != 2) {
-        printw("│");
-      }
-    }
-
-    for (int j = 0; j < height / 2; j++) {
-      printw("\n");
-      for (int l = 0; l < 3; l++) {
-        for (int k = 0; k < width; k++) {
-          printw(" ");
+      for (int j = 0; j < height / 2; j++) {
+        printw("\n");
+        for (int l = 0; l < 3; l++) {
+          for (int k = 0; k < width; k++) {
+            printw(" ");
+          }
+          if (l != 2) {
+            printw("│");
+          }
         }
-        if (l != 2) {
-          printw("│");
+      }
+    } else {
+      for (int k = 0; k < height; k++) {
+        for (int j = 0; j < 3; j++) {
+          if (board[i][j] == P1_) {
+            for (int l = 0; l < width; l++) {
+              if (height <= 3) {
+                if (k + (width - height) / 2 == l || k + (width - height + 1) / 2 + l == width - 1) {
+                  printw("█");
+                } else {
+                  printw(" ");
+                }
+              } else {
+                if (k + (width - height) / 2 == l || k + (width - height) / 2 + l == width - 1) {
+                  printw("█");
+                } else {
+                  printw(" ");
+                }
+              }
+            }
+            if (j != 2) {
+              printw("│");
+            }
+          } else if (board[i][j] == P2_) {
+            for (int l = 0; l < width; l++) {
+              if (k == 0 || k == height - 1) {
+                if (l >= (width - height) / 2 && l < width - (width - height) / 2) {
+                  printw("█");
+                } else {
+                  printw(" ");
+                }
+              }
+              else {
+                if (l == (width - height) / 2 || l == width - (width - height) / 2 - 1) {
+                  printw("█");
+                } else {
+                  printw(" ");
+                }
+              }
+            }
+            if (j != 2) {
+              printw("│");
+            }
+          } else {
+            for (int l = 0; l < width; l++) {
+              printw(" ");
+            }
+            if (j != 2) {
+              printw("│");
+            }
+          }
+        }
+        if (k != height - 1) {
+          printw("\n");
         }
       }
     }
@@ -78,40 +137,32 @@ void draw() {
   move(y * (height + 1) + height / 2 + 1, x * (width + 1) + width / 2);
 }
 
-void select() {
+void selection() {
   int ch = -1;
   while (ch != -2) {
 	  ch = getch();
     switch(ch) {
       case 65:    // key up
-        if (y > 0) {
-          y--;
-        }
+        if (y > 0) y--;
         move(y * (height + 1) + height / 2 + 1, x * (width + 1) + width / 2);
         break;
       case 66:    // key down
-        if (y < 2) {
-          y++;
-        }
+        if (y < 2) y++;
         move(y * (height + 1) + height / 2 + 1, x * (width + 1) + width / 2);
         break;
       case 67:    // key right
-        if (x < 2) {
-          x++;
-        }
+        if (x < 2) x++;
         move(y * (height + 1) + height / 2 + 1, x * (width + 1) + width / 2);
         break;
       case 68:    // key left
-        if (x > 0) {
-          x--;
-        }
+        if (x > 0) x--;
         move(y * (height + 1) + height / 2 + 1, x * (width + 1) + width / 2);
         break;
       case '\n':  // return
         if (board[y][x] == ' ') ch = -2;
-        turn ? board[y][x] = P2_ : board[y][x] = P1_;
+        turn ? (board[y][x] = P2_) : (board[y][x] = P1_);
         break;
-      case '-':
+      case '-':  // decrease size
         if (width > 3 && height > 1) {
           width -= 5;
           height -= 2;
@@ -119,11 +170,20 @@ void select() {
           draw();
         }
         break;
-      case '+':
+      case '+':  // increase size
         width += 5;
         height += 2;
         clear();
         draw();
+        break;
+      case '=':  // maximise space
+        big = !big;
+        clear();
+        draw();
+        break;
+      case 'q':  // exit
+        endwin();
+        exit(0);
         break;
     }
   }
@@ -181,7 +241,7 @@ void gameloop() {
       break;
     }
 
-    select();
+    selection();
     turn = !turn;
   }
 }

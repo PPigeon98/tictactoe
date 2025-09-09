@@ -12,14 +12,14 @@ set(CURSES_NEED_WIDE TRUE)
 find_package(Curses REQUIRED)
 
 
-add_executable(tictactoe src/tictactoe.cc)
+add_executable(tictactoe src/tictactoe.c)
 target_link_libraries(tictactoe ${CURSES_LIBRARIES})
 
-add_executable(connect4 src/connect4.cc)
+add_executable(connect4 src/connect4.c)
 target_link_libraries(connect4 ${CURSES_LIBRARIES})
 
-add_executable(snake src/snake.cc)
+add_executable(snake src/snake.c)
 target_link_libraries(snake ${CURSES_LIBRARIES})
 
-add_executable(tetris src/tetris.cc)
+add_executable(tetris src/tetris.c)
 target_link_libraries(tetris ${CURSES_LIBRARIES})
