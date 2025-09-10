@@ -2,6 +2,8 @@
 #include <locale.h>
 #include <stdlib.h>
 #include <queue>
+#include <algorithm>
+#include <random>
 
 enum Direction {
   UP,
@@ -10,21 +12,46 @@ enum Direction {
   LEFT
 } direction;
 
+std::pair<int, int> directions[4] = {
+  {-1, 0},
+  {0, 1},
+  {1, 0},
+  {0, -1}
+};
+
 int score = 0;
 int gamewidth = 16;
 int gameheight = 8;
 int x = 0;
 int y = 0;
+bool hitwall = false;
 
 std::queue<std::pair<int, int>> snake;
 std::pair<int, int> food;
+std::vector<std::pair<int, int>> available;
 
-void init() {
-  x = gamewidth / 2;
-  y = gameheight / 2;
+void placefood() {
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<std::size_t> dis(0, available.size() - 1);
+  std::pair<int, int> randlocation = available[dis(gen)];
+  move(randlocation.first, randlocation.second);
+  food = randlocation;
+  printw("◆");
 }
 
-void draw() {
+void init() {
+  direction = UP;
+  x = (gamewidth + 2) / 2;
+  y = (gameheight + 2) / 2;
+  for (int i = 1; i <= gameheight; i++) {
+    for (int j = 1; j <= gamewidth; j++) {
+      if (i != y && j != x) {
+        available.push_back({j, i});
+      }
+    }
+  }
+  snake.push({y, x});
   move(0, 0);
   printw("Score = %d\n", score);
   for (int i = 0; i < gameheight + 2; i++) {
@@ -55,7 +82,9 @@ void draw() {
     }
     printw("\n");
   }
-  printw("%d", direction);
+  move(y, x);
+  printw("○");
+  placefood();
 }
 
 void selection() {
@@ -63,12 +92,20 @@ void selection() {
   while (ch != -2) {
 	  ch = getch();
     switch(ch) {
+      case 65:    // key up
+        if (direction != DOWN) direction = UP;
+        ch = -2;
+        break;
+      case 66:    // key down
+        if (direction != UP) direction = DOWN;
+        ch = -2;
+        break;
       case 67:    // key right
-        direction = static_cast<Direction>((static_cast<int>(direction) + 1) % 4);
+        if (direction != LEFT) direction = RIGHT;
         ch = -2;
         break;
       case 68:    // key left
-        direction = static_cast<Direction>((static_cast<int>(direction) + 3) % 4);
+        if (direction != RIGHT) direction = LEFT;
         ch = -2;
         break;
       case 'q':  // exit
@@ -80,14 +117,61 @@ void selection() {
 }
 
 void moving() {
+  int oldx = x;
+  int oldy = y;
+  x += directions[direction].second;
+  y += directions[direction].first;
+  if (x < 0) hitwall = true;
+  if (x >= gamewidth) hitwall = true;
+  if (y < 0) hitwall = true;
+  if (y >= gameheight) hitwall = true;
+  snake.push({y, x});
+  move(oldy, oldx);
+  printw("●");
+  move(y, x);
+  auto it = std::find(available.begin(), available.end(), std::make_pair(y, x));
+  if (it != available.end()) {
+    available.erase(it);
+  }
+  if (y == food.first && x == food.second) {
+    score++;
+    placefood();
+  } else {
+    int tmpy = snake.front().first;
+    int tmpx = snake.front().second;
+    move(tmpy, tmpx);
+    auto it2 = std::find(available.begin(), available.end(), std::make_pair(tmpy, tmpx));
+    if (it2 != available.end()) {
+      available.erase(it2);
+    }
+    snake.pop();
+    printw(" ");
+  }
+  printw("○");
+  refresh();
+}
 
+bool win() {
+  return false;
 }
 
 void gameloop() {
   while (true) {
-    draw();
-    refresh();
+    bool result = win();
+    if (hitwall || result) {
+      move(0, 0);
+      if (result) {
+        printw("You Win! Your score was %d! Press any key to exit.", score);
+      } else {
+        printw("You Lose! Your score was %d! Press any key to exit.", score);
+      }
+      refresh();
+      getch();
+      break;
+    }
+
     selection();
+    moving();
   }
 }
 
