@@ -18,7 +18,7 @@ target_link_libraries(tictactoe ${CURSES_LIBRARIES})
 add_executable(connect4 src/connect4.c)
 target_link_libraries(connect4 ${CURSES_LIBRARIES})
 
-add_executable(snake src/snake.c)
+add_executable(snake src/snake.cc)
 target_link_libraries(snake ${CURSES_LIBRARIES})
 
 add_executable(tetris src/tetris.c)

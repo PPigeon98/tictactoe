@@ -147,6 +147,7 @@ void gameloop() {
 int main() {
   setlocale(LC_ALL, ""); // Generate locales if not working
   initscr();
+  curs_set(2);
   noecho();
 
   init();
