@@ -31,6 +31,7 @@ std::pair<int, int> food;
 std::vector<std::pair<int, int>> available;
 
 void placefood() {
+  if (available.empty()) return;
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_int_distribution<std::size_t> dis(0, available.size() - 1);
@@ -44,10 +45,10 @@ void init() {
   direction = UP;
   x = (gamewidth + 2) / 2;
   y = (gameheight + 2) / 2;
-  for (int i = 1; i <= gameheight; i++) {
+  for (int i = 2; i <= gameheight + 1; i++) {
     for (int j = 1; j <= gamewidth; j++) {
-      if (i != y && j != x) {
-        available.push_back({j, i});
+      if (!(i == y && j == x)) {
+        available.push_back({i, j});
       }
     }
   }
@@ -122,16 +123,17 @@ void moving() {
   x += directions[direction].second;
   y += directions[direction].first;
   if (x < 0) hitwall = true;
-  if (x >= gamewidth) hitwall = true;
-  if (y < 0) hitwall = true;
-  if (y >= gameheight) hitwall = true;
+  if (x >= gamewidth + 1) hitwall = true;
+  if (y <= 1) hitwall = true;
+  if (y > gameheight + 1) hitwall = true;
   snake.push({y, x});
   move(oldy, oldx);
   printw("●");
-  move(y, x);
   auto it = std::find(available.begin(), available.end(), std::make_pair(y, x));
   if (it != available.end()) {
     available.erase(it);
+  } else {
+    hitwall = true;
   }
   if (y == food.first && x == food.second) {
     score++;
@@ -140,18 +142,19 @@ void moving() {
     int tmpy = snake.front().first;
     int tmpx = snake.front().second;
     move(tmpy, tmpx);
-    auto it2 = std::find(available.begin(), available.end(), std::make_pair(tmpy, tmpx));
-    if (it2 != available.end()) {
-      available.erase(it2);
-    }
-    snake.pop();
     printw(" ");
+    available.push_back({tmpy, tmpx});
+    snake.pop();
   }
+  move(y, x);
   printw("○");
+  move(0, 0);
+  printw("Score = %d\n", score);
   refresh();
 }
 
 bool win() {
+  if (available.empty()) return true;
   return false;
 }
 
@@ -175,7 +178,9 @@ void gameloop() {
   }
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+  if (argc > 1) gameheight = std::atoi(argv[1]);
+  if (argc > 2) gamewidth = std::atoi(argv[2]);
   setlocale(LC_ALL, ""); // Generate locales if not working
   initscr();
   curs_set(0);
