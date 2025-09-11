@@ -23,3 +23,9 @@ target_link_libraries(snake ${CURSES_LIBRARIES})
 
 add_executable(tetris src/tetris.c)
 target_link_libraries(tetris ${CURSES_LIBRARIES})
+
+add_executable(sudoku src/sudoku.cc)
+target_link_libraries(sudoku ${CURSES_LIBRARIES})
+
+add_executable(chess src/chess.c)
+target_link_libraries(chess ${CURSES_LIBRARIES})
