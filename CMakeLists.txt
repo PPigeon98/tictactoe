@@ -29,3 +29,18 @@ target_link_libraries(sudoku ${CURSES_LIBRARIES})
 
 add_executable(chess src/chess.c)
 target_link_libraries(chess ${CURSES_LIBRARIES})
+
+add_executable(bigtactoe src/bigtactoe.c)
+target_link_libraries(bigtactoe ${CURSES_LIBRARIES})
+
+add_executable(pong src/pong.c)
+target_link_libraries(pong ${CURSES_LIBRARIES})
+
+add_executable(minesweeper src/minesweeper.c)
+target_link_libraries(minesweeper ${CURSES_LIBRARIES})
+
+add_executable(stack src/stack.c)
+target_link_libraries(stack ${CURSES_LIBRARIES})
+
+add_executable(tron src/tron.c)
+target_link_libraries(tron ${CURSES_LIBRARIES})
