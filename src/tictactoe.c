@@ -159,8 +159,10 @@ void selection() {
         move(y * (height + 1) + height / 2 + 1, x * (width + 1) + width / 2);
         break;
       case '\n':  // return
-        if (board[y][x] == ' ') ch = -2;
-        turn ? (board[y][x] = P2_) : (board[y][x] = P1_);
+        if (board[y][x] == ' ') {
+          ch = -2;
+          turn ? (board[y][x] = P2_) : (board[y][x] = P1_);
+        }
         break;
       case '-':  // decrease size
         if (width > 3 && height > 1) {

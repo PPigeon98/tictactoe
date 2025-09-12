@@ -49,6 +49,65 @@ void init() {
   move(bigy * 6 + 3, bigx * 14 + 6);
 }
 
+void bigger(char p) {
+  int starty = bigy * 6 + 1;
+  int startx = bigx * 14 + 1;
+
+  if (p == P1_) {
+    mvprintw(starty, startx,     "  █     █  ");
+    mvprintw(starty + 1, startx, "   █   █   ");
+    mvprintw(starty + 2, startx, "     █     ");
+    mvprintw(starty + 3, startx, "   █   █   ");
+    mvprintw(starty + 4, startx, "  █     █  ");
+  } else if (p == P2_) {
+    mvprintw(starty, startx,     "   █████   ");
+    mvprintw(starty + 1, startx, "  █     █  ");
+    mvprintw(starty + 2, startx, "  █     █  ");
+    mvprintw(starty + 3, startx, "  █     █  ");
+    mvprintw(starty + 4, startx, "   █████   ");
+  } else {
+    mvprintw(starty, startx,     "   █████   ");
+    mvprintw(starty + 1, startx, "  █     █  ");
+    mvprintw(starty + 2, startx, "       █   ");
+    mvprintw(starty + 3, startx, "     █     ");
+    mvprintw(starty + 4, startx, "     █     ");
+  }
+
+  refresh();
+}
+
+int checkboard(int idx) {
+  for (int i = 0; i < 3; i++) {
+    if (smallboard[idx][i][0] != ' ' && smallboard[idx][i][0] == smallboard[idx][i][1] && smallboard[idx][i][1] == smallboard[idx][i][2]) {
+      return (smallboard[idx][i][0] == P1_) ? 1 : 2;
+    }
+  }
+
+  for (int j = 0; j < 3; j++) {
+    if (smallboard[idx][0][j] != ' ' && smallboard[idx][0][j] == smallboard[idx][1][j] && smallboard[idx][1][j] == smallboard[idx][2][j]) {
+      return (smallboard[idx][0][j] == P1_) ? 1 : 2;
+    }
+  }
+
+  if (smallboard[idx][0][0] != ' ' && smallboard[idx][0][0] == smallboard[idx][1][1] && smallboard[idx][1][1] == smallboard[idx][2][2]) {
+    return (smallboard[idx][0][0] == P1_) ? 1 : 2;
+  }
+
+  if (smallboard[idx][0][2] != ' ' && smallboard[idx][0][2] == smallboard[idx][1][1] && smallboard[idx][1][1] == smallboard[idx][2][0]) {
+    return (smallboard[idx][0][2] == P1_) ? 1 : 2;
+  }
+
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+      if (smallboard[idx][i][j] == ' ') {
+        return 0;
+      }
+    }
+  }
+
+  return 3;
+}
+
 void selection() {
   int ch = -1;
   while (ch != -2) {
@@ -92,14 +151,34 @@ void selection() {
         break;
       case '\n':  // return
         if (big) {
-          big = false;
-          x = 1;
-          y = 1;
+          if (board[bigy][bigx] == ' ') {
+            big = false;
+            x = 1;
+            y = 1;
+          }
         } else {
-          if (board[y][x] == ' ') ch = -2;
-          turn ? (board[y][x] = P2_) : (board[y][x] = P1_);
-          bigx = x;
-          bigy = y;
+          int idx = bigy * 3 + bigx;
+          if (smallboard[idx][y][x] == ' ') {
+            ch = -2;
+            turn ? (smallboard[idx][y][x] = P2_) : (smallboard[idx][y][x] = P1_);
+            printw("%c", smallboard[idx][y][x]);
+            refresh();
+            int result = checkboard(idx);
+            if (result == 1) {
+              board[bigy][bigx] = P1_;
+              bigger(P1_);
+            } else if (result == 2) {
+              board[bigy][bigx] = P2_;
+              bigger(P2_);
+            } else if (result == 3) {
+              board[bigy][bigx] = '?';
+              bigger('?');
+            }
+            bigx = x;
+            bigy = y;
+            if (board[bigy][bigx] != ' ') big = true;
+            move(bigy * 6 + y * 2 + 1, bigx * 14 + x * 4 + 2);
+          }
         }
         break;
       case '?':  // help
@@ -122,22 +201,22 @@ void selection() {
 
 int win() {
   for (int i = 0; i < 3; i++) {
-    if (board[i][0] != ' ' && board[i][0] == board[i][1] && board[i][1] == board[i][2]) {
+    if (board[i][0] != ' ' && board[i][0] != '?' && board[i][0] == board[i][1] && board[i][1] == board[i][2]) {
       return (board[i][0] == P1_) ? 1 : 2;
     }
   }
-  
+
   for (int j = 0; j < 3; j++) {
-    if (board[0][j] != ' ' && board[0][j] == board[1][j] && board[1][j] == board[2][j]) {
+    if (board[0][j] != ' ' && board[0][j] != '?' && board[0][j] == board[1][j] && board[1][j] == board[2][j]) {
       return (board[0][j] == P1_) ? 1 : 2;
     }
   }
-  
-  if (board[0][0] != ' ' && board[0][0] == board[1][1] && board[1][1] == board[2][2]) {
+
+  if (board[0][0] != ' ' && board[0][0] != '?' && board[0][0] == board[1][1] && board[1][1] == board[2][2]) {
     return (board[0][0] == P1_) ? 1 : 2;
   }
-  
-  if (board[0][2] != ' ' && board[0][2] == board[1][1] && board[1][1] == board[2][0]) {
+
+  if (board[0][2] != ' ' && board[0][2] != '?' && board[0][2] == board[1][1] && board[1][1] == board[2][0]) {
     return (board[0][2] == P1_) ? 1 : 2;
   }
 
@@ -171,6 +250,10 @@ void gameloop() {
 
     selection();
     turn = !turn;
+    move(0, 0);
+    turn ? printw("Player 2's turn:\n") : printw("Player 1's turn:\n");
+    refresh();
+    move(bigy * 6 + y * 2 + 1, bigx * 14 + x * 4 + 2);
   }
 }
 
