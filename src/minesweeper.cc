@@ -17,8 +17,8 @@ int gamewidth = 16;
 int gameheight = 8;
 int x = 0;
 int y = 0;
-int bombs = 8;
-int remaining = 120;
+int bombs = 20;
+int remaining = 108;
 int flags = 0;
 
 void placement() {
