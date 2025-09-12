@@ -44,3 +44,6 @@ target_link_libraries(stack ${CURSES_LIBRARIES})
 
 add_executable(tron src/tron.c)
 target_link_libraries(tron ${CURSES_LIBRARIES})
+
+add_executable(pacman src/pacman.c)
+target_link_libraries(pacman ${CURSES_LIBRARIES})

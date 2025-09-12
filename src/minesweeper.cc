@@ -21,32 +21,8 @@ int bombs = 8;
 int remaining = 120;
 int flags = 0;
 
-void surround() {
-  int counter = 0;
-  
-  for (int i = -1; i <= 1; i++) {
-    for (int j = -1; j <= 1; j++) {
-      int newx = x + i;
-      int newy = y + j;
-
-      if (newx >= 0 && newx < gamewidth && newy >= 0 && newy < gameheight) {
-        if (board[newy][newx].mine) {
-          counter++;
-        }
-      }
-    }
-  }
-
-  if (counter == 0) {
-    printw(" ");
-    move(y * 2 + 2, x * 4 + 2);
-  } else {
-    printw("%d", counter);
-    move(y * 2 + 2, x * 4 + 2);
-  }
-}
-
 void placement() {
+  if (bombs <= 0) return;
   std::vector<std::pair<int, int>> positions;
   for (int i = 0; i < gameheight; i++) {
     for (int j = 0; j < gamewidth; j++) {
@@ -136,8 +112,69 @@ void leak() {
   }
 }
 
-void flood() {
+int surround(int cx, int cy) {
+  int counter = 0;
+  
+  for (int i = -1; i <= 1; i++) {
+    for (int j = -1; j <= 1; j++) {
+      int newx = cx + i;
+      int newy = cy + j;
 
+      if (newx >= 0 && newx < gamewidth && newy >= 0 && newy < gameheight) {
+        if (board[newy][newx].mine) {
+          counter++;
+        }
+      }
+    }
+  }
+
+  return counter;
+}
+
+void flood() {
+  std::vector<std::pair<int, int>> queue;
+  queue.push_back({y, x});
+
+  while (!queue.empty()) {
+    auto current = queue.back();
+    queue.pop_back();
+    int cy = current.first;
+    int cx = current.second;
+
+    int mine_count = surround(cx, cy);
+
+    if (mine_count > 0 && board[cy][cx].open == false && board[cy][cx].flag == false) {
+      board[cy][cx].open = true;
+      move(cy * 2 + 2, cx * 4 + 2);
+      printw("%d", mine_count);
+      refresh();
+      remaining--;
+      continue;
+    }
+
+    if (board[cy][cx].open == false && board[cy][cx].flag == false) {
+      board[cy][cx].open = true;
+      remaining--;
+      move(cy * 2 + 2, cx * 4 + 2);
+      printw(" ");
+      refresh();
+
+      for (int i = -1; i <= 1; i++) {
+        for (int j = -1; j <= 1; j++) {
+          if (i == 0 && j == 0) continue;
+          
+          int newx = cx + j;
+          int newy = cy + i;
+          
+          if (newx >= 0 && newx < gamewidth && newy >= 0 && newy < gameheight) {
+            if (!board[newy][newx].open && !board[newy][newx].flag && !board[newy][newx].mine) {
+              queue.push_back({newy, newx});
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 void selection() {
@@ -162,9 +199,8 @@ void selection() {
         move(y * 2 + 2, x * 4 + 2);
         break;
       case '\n':  // return
-        if (board[y][x].open == false) {
+        if (board[y][x].open == false && board[y][x].flag == false) {
           ch = -2;
-          board[y][x].open = true;
           if (board[y][x].mine) {
             move(0, 0);
             printw("You Lose! Press any key to exit.                            ");
@@ -174,9 +210,17 @@ void selection() {
             endwin();
             exit(0);
           }
-          flood();
-          remaining--;
-          surround();
+          int counter = surround(x, y);
+
+          if (counter == 0) {
+            flood();
+          } else {
+            board[y][x].open = true;
+            move(y * 2 + 2, x * 4 + 2);
+            printw("%d", counter);
+            refresh();
+            remaining--;
+          }
         }
         break;
       case 'f':  // flag
