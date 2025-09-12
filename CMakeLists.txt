@@ -36,7 +36,7 @@ target_link_libraries(bigtactoe ${CURSES_LIBRARIES})
 add_executable(pong src/pong.c)
 target_link_libraries(pong ${CURSES_LIBRARIES})
 
-add_executable(minesweeper src/minesweeper.c)
+add_executable(minesweeper src/minesweeper.cc)
 target_link_libraries(minesweeper ${CURSES_LIBRARIES})
 
 add_executable(stack src/stack.c)
