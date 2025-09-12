@@ -62,9 +62,6 @@ void placement() {
     int row = positions[i].first;
     int col = positions[i].second;
     board[row][col].mine = true;
-    move(row * 2 + 2, col * 4 + 2);
-    printw("!");
-    refresh();
   }
 }
 
@@ -121,7 +118,26 @@ void init() {
   printw("╝\n");
   refresh();
   placement();
+  remaining = (gameheight * gamewidth) - bombs;
   move(y * 2 + 2, x * 4 + 2);
+}
+
+void leak() {
+  for (int i = 0; i < gameheight; i++) {
+    for (int j = 0; j < gamewidth; j++) {
+      move(i * 2 + 2, j * 4 + 2);
+      if (board[i][j].mine) {
+        printw("!");
+      } else {
+        printw(" ");
+      }
+      refresh();
+    }
+  }
+}
+
+void flood() {
+
 }
 
 void selection() {
@@ -152,11 +168,14 @@ void selection() {
           if (board[y][x].mine) {
             move(0, 0);
             printw("You Lose! Press any key to exit.                            ");
+            leak();
             refresh();
             getch();
             endwin();
             exit(0);
           }
+          flood();
+          remaining--;
           surround();
         }
         break;
@@ -179,9 +198,6 @@ void selection() {
           }
         }
         break;
-      case 's':  // submit
-        ch = -2;
-        break;
       case 'q':  // exit
         endwin();
         exit(0);
@@ -196,6 +212,16 @@ void gameloop() {
     move(0, 0);
     printw("Number of bombs: %d, number of flags placed: %d", bombs, flags);
     move(y * 2 + 2, x * 4 + 2);
+
+    if (remaining == 0) {
+      move(0, 0);
+      printw("You Win! Press any key to exit.                            ");
+      leak();
+      refresh();
+      getch();
+      endwin();
+      exit(0);
+    }
   }
 }
 
